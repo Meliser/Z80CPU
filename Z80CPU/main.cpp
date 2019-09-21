@@ -5,6 +5,8 @@
 
 unsigned char programm[] =
 {
+	//0b11101011,		//EX_DE_HL
+
 	0b00110110,		//LD_HL_N
 	0b01110101,		
 
@@ -36,7 +38,7 @@ int main()
 {
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
-
+	
 	/**z80Cpu->DE = 0xffee;
 	*z80Cpu->HL = 0xccdd;
 

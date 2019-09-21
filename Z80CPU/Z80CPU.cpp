@@ -4,7 +4,7 @@
 static unsigned char opcodes8[] =
 {
 	//11
-	0xEB,//EX_DE_HL
+	//0xEB,//EX_DE_HL
 
 	//01
 	0x70,//LD_HL_R
@@ -29,6 +29,8 @@ const size_t opcodes16Size = sizeof(opcodes16) / sizeof(opcodes16[0]);
 
 void init(Z80Cpu* z80Cpu)
 {
+	assert(!("Opcodes sizes do not match\n",opcodes8Size + opcodes16Size - OPCODES_SIZE));
+
 	z80Cpu->BC = (unsigned short*)(z80Cpu->basicGpRegisters + B);
 	z80Cpu->DE = (unsigned short*)(z80Cpu->basicGpRegisters + D);
 	z80Cpu->HL = (unsigned short*)(z80Cpu->basicGpRegisters + H);
@@ -69,8 +71,10 @@ unsigned char fetch(Z80Cpu* z80Cpu) {
 
 	return j;
 }
+
  size_t evaluate16(unsigned short opcode) {
 	static const size_t masksSize = 6;
+	//optimize masks
 	static unsigned short masks[masksSize] =
 	{
 		0b1100000000000000,
@@ -96,6 +100,7 @@ unsigned char fetch(Z80Cpu* z80Cpu) {
 
 	return counter;
 }
+
 void execute(Z80Cpu* z80Cpu) {
 	unsigned char opcode8 = fetch(z80Cpu);
 	size_t index = evaluate(opcode8);
@@ -108,6 +113,12 @@ void execute(Z80Cpu* z80Cpu) {
 
 	switch (index)
 	{
+	/*case EX_DE_HL:
+	{
+		swap(&z80Cpu->DE, &z80Cpu->HL);
+		printf("EX_DE_HL\n");
+		break;
+	}*/
 	case LD_HL_R:
 	{
 		unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];

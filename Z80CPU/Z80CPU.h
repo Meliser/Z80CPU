@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <Windows.h>
 #include <stdio.h>
+#include <assert.h>
 
 //general purpose registers
 enum GP_REGISTERS : unsigned char
@@ -21,6 +22,7 @@ enum SP_REGISTERS16 : unsigned char
 enum OPCODES
 {
 	//8 bit opcodes
+	//EX_DE_HL,
 	LD_HL_R,
 	LD_R_HL,
 	LD_R1_R2,
@@ -28,9 +30,12 @@ enum OPCODES
 	LD_R_N,
 	LD_DD_NN,
 	NOP,
+
 	//16 bit opcodes
 	LD_R_IY_D,
-	LD_R_IX_D
+	LD_R_IX_D,
+
+	OPCODES_SIZE
 };
 
 struct Z80Cpu
