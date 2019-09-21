@@ -1,9 +1,11 @@
 #include "Z80CPU.h"
 
 //available 8 bit opcodes
-const size_t opcodes8Size = 7;
-static unsigned char opcodes8[opcodes8Size] =
+static unsigned char opcodes8[] =
 {
+	//11
+	0xEB,//EX_DE_HL
+
 	//01
 	0x70,//LD_HL_R
 	0x46,//LD_R_HL
@@ -15,17 +17,31 @@ static unsigned char opcodes8[opcodes8Size] =
 	0x01,//LD_DD_NN
 	0x00 //NOP
 };
+const size_t opcodes8Size = sizeof(opcodes8) / sizeof(opcodes8[0]);
 
 //available 16 bit opcodes
-const size_t opcodes16Size = 2;
-static unsigned short opcodes16[opcodes16Size] =
+static unsigned short opcodes16[] =
 {
 	0b1111110101000110,//LD_R_IY_D
 	0b1101110101000110 //LD_R_IX_D
 };
+const size_t opcodes16Size = sizeof(opcodes16) / sizeof(opcodes16[0]);
 
+void init(Z80Cpu* z80Cpu)
+{
+	z80Cpu->BC = (unsigned short*)(z80Cpu->basicGpRegisters + B);
+	z80Cpu->DE = (unsigned short*)(z80Cpu->basicGpRegisters + D);
+	z80Cpu->HL = (unsigned short*)(z80Cpu->basicGpRegisters + H);
+	z80Cpu->AF = (unsigned short*)(z80Cpu->basicGpRegisters + F);
+	z80Cpu->ADDITIONAL_BC = (unsigned short*)(z80Cpu->additionalGpRegisters + B);
+	z80Cpu->ADDITIONAL_DE = (unsigned short*)(z80Cpu->additionalGpRegisters + D);
+	z80Cpu->ADDITIONAL_HL = (unsigned short*)(z80Cpu->additionalGpRegisters + H);
+	z80Cpu->ADDITIONAL_AF = (unsigned short*)(z80Cpu->additionalGpRegisters + F);
 
- unsigned char fetch(Z80Cpu* z80Cpu) {
+	z80Cpu->running = true;
+}
+
+unsigned char fetch(Z80Cpu* z80Cpu) {
 	return z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 	
 }
@@ -83,11 +99,13 @@ static unsigned short opcodes16[opcodes16Size] =
 void execute(Z80Cpu* z80Cpu) {
 	unsigned char opcode8 = fetch(z80Cpu);
 	size_t index = evaluate(opcode8);
+
 	unsigned short opcode16 = 0;
 	if (index == opcodes8Size - 1 and opcode8 != 0) {
 		opcode16 = (opcode8 << 8) | fetch(z80Cpu);
 		index = evaluate16(opcode16);
 	}
+
 	switch (index)
 	{
 	case LD_HL_R:

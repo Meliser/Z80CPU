@@ -2,8 +2,8 @@
 #include "Z80CPU.h"
 #include "dbg.h"
 
-const size_t programmSize = 17;
-unsigned char programm[programmSize] =
+
+unsigned char programm[] =
 {
 	0b00110110,		//LD_HL_N
 	0b01110101,		
@@ -30,29 +30,19 @@ unsigned char programm[programmSize] =
 	0b01111110,		//LD_R_HL
 	
 };
+const size_t programmSize = sizeof(programm) / sizeof(programm[0]);
 
 int main()
 {
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
+	init(z80Cpu);
 
-	z80Cpu->BC = (unsigned short*)(z80Cpu->basicGpRegisters + B);
-	z80Cpu->DE = (unsigned short*)(z80Cpu->basicGpRegisters + D);
-	z80Cpu->HL = (unsigned short*)(z80Cpu->basicGpRegisters + H);
-	z80Cpu->AF = (unsigned short*)(z80Cpu->basicGpRegisters + F);
-	z80Cpu->ADDITIONAL_BC = (unsigned short*)(z80Cpu->additionalGpRegisters + B);
-	z80Cpu->ADDITIONAL_DE = (unsigned short*)(z80Cpu->additionalGpRegisters + D);
-	z80Cpu->ADDITIONAL_HL = (unsigned short*)(z80Cpu->additionalGpRegisters + H);
-	z80Cpu->ADDITIONAL_AF = (unsigned short*)(z80Cpu->additionalGpRegisters + F);
-	
-
-	z80Cpu->running = true;
-
-	*z80Cpu->DE = 0xffee;
+	/**z80Cpu->DE = 0xffee;
 	*z80Cpu->HL = 0xccdd;
 
 	printf("%X\n", *z80Cpu->DE);
 	swap(&z80Cpu->DE, &z80Cpu->HL);
-	printf("%X", *z80Cpu->DE);
+	printf("%X", *z80Cpu->DE);*/
 
 	memcpy(z80Cpu->ram, programm, programmSize);
 

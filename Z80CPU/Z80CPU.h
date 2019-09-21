@@ -56,15 +56,17 @@ struct Z80Cpu
 	bool running;
 };
 
- unsigned char fetch(Z80Cpu* z80Cpu);
+void init(Z80Cpu* z80Cpu);
 
- size_t evaluate(unsigned char opcode);
+unsigned char fetch(Z80Cpu* z80Cpu);
 
- size_t evaluate16(unsigned short opcode);
+size_t evaluate(unsigned char opcode);
 
- void execute(Z80Cpu* z80Cpu);
+size_t evaluate16(unsigned short opcode);
 
- void swap(unsigned short** leftPtr, unsigned short** rightPtr);
+void execute(Z80Cpu* z80Cpu);
+
+void swap(unsigned short** leftPtr, unsigned short** rightPtr);
 
 
 
