@@ -22,15 +22,19 @@ enum SP_REGISTERS16 : unsigned char
 enum OPCODES
 {
 	//8 bit opcodes
-	//EX_DE_HL,
-	LD_HL_R,
-	LD_R_HL,
-	LD_R1_R2,
+	//00
 	LD_HL_N,
 	LD_R_N,
 	LD_DD_NN,
 	NOP,
-
+	//01
+	LD_HL_R,
+	LD_R_HL,
+	LD_R1_R2,
+	//10
+	TEST,
+	//11
+	EX_DE_HL,
 	//16 bit opcodes
 	LD_R_IY_D,
 	LD_R_IX_D,
