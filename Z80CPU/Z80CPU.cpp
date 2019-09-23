@@ -1,7 +1,7 @@
 #include "Z80CPU.h"
 
 //available 8 bit opcodes
-static unsigned char opcodes00[] =
+static unsigned char block00[] =
 {
 	//00
 	0x36,//LD_HL_N
@@ -9,32 +9,32 @@ static unsigned char opcodes00[] =
 	0x01,//LD_DD_NN
 	0x00, //NOP
 };
-static unsigned char opcodes01[] =
+static unsigned char block01[] =
 {
 	//01
 	0x70,//LD_HL_R
 	0x46,//LD_R_HL
 	0x40,//LD_R1_R2
 };
-static unsigned char opcodes10[1] =
+static unsigned char block10[1] =
 {
 	0xBF // for test
 };
-static unsigned char opcodes11[] =
+static unsigned char block11[] =
 {
 	//11
 	0xEB,//EX_DE_HL
 };
 unsigned char* opcodes8[] =
 {
-	opcodes00,opcodes01,opcodes10,opcodes11
+	block00,block01,block10,block11
 };
 const size_t opcodesSizes[4] =
 {	
-	sizeof(opcodes00) / sizeof(opcodes00[0]),
-	sizeof(opcodes01) / sizeof(opcodes01[0]),
-	sizeof(opcodes10) / sizeof(opcodes10[0]),
-	sizeof(opcodes11) / sizeof(opcodes11[0]),
+	sizeof(block00) / sizeof(block00[0]),
+	sizeof(block01) / sizeof(block01[0]),
+	sizeof(block10) / sizeof(block10[0]),
+	sizeof(block11) / sizeof(block11[0]),
 };
 const size_t opcodesOffsets[5] =
 {
@@ -146,21 +146,20 @@ void execute(Z80Cpu* z80Cpu) {
 	{
 	case EX_DE_HL:
 	{
-		swap(&z80Cpu->DE, &z80Cpu->HL);
+		swap(z80Cpu->DE,z80Cpu->HL);
 		printf("EX_DE_HL\n");
 		break;
 	}
-	case LD_HL_R:
+	case LD_HL_R://test
 	{
-		unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
-		z80Cpu->ram[HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
 		printf("LD_HL_R\n");
 		break;
 	}
 	case LD_R_HL:
 	{
-		unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
-		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[HL];
+		//unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
+		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
 		printf("LD_R_HL\n");
 		break;
 	}
@@ -170,8 +169,8 @@ void execute(Z80Cpu* z80Cpu) {
 		break;
 	case LD_HL_N:
 	{
-		unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
-		z80Cpu->ram[HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		//unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
+		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		printf("LD_HL_N\n");
 		break;
 	}
@@ -232,9 +231,9 @@ void execute(Z80Cpu* z80Cpu) {
 	}
 }
 
-void swap(unsigned short** leftPtr, unsigned short** rightPtr)
+void swap(unsigned short* leftPtr, unsigned short* rightPtr)
 {
-	unsigned short* temp = *leftPtr;
+	unsigned short temp = *leftPtr;
 	*leftPtr = *rightPtr;
 	*rightPtr = temp;
 }

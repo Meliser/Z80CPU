@@ -69,13 +69,14 @@ void init(Z80Cpu* z80Cpu);
 
 unsigned char fetch(Z80Cpu* z80Cpu);
 
-size_t evaluate(unsigned char opcode);
+size_t evaluate(unsigned char opcode, bool& success);
 
 size_t evaluate16(unsigned short opcode);
 
 void execute(Z80Cpu* z80Cpu);
 
-void swap(unsigned short** leftPtr, unsigned short** rightPtr);
+void swap(unsigned short* leftPtr, unsigned short* rightPtr);
+
 
 
 
