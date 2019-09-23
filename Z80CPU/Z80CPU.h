@@ -71,7 +71,7 @@ unsigned char fetch(Z80Cpu* z80Cpu);
 
 size_t evaluate(unsigned char opcode, bool& success);
 
-size_t evaluate16(unsigned short opcode);
+size_t evaluate(unsigned short opcode);
 
 void execute(Z80Cpu* z80Cpu);
 

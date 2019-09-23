@@ -103,7 +103,7 @@ unsigned char fetch(Z80Cpu* z80Cpu) {
 	return j + opcodesOffsets[block];
 }
 
- size_t evaluate16(unsigned short opcode) {
+ size_t evaluate(unsigned short opcode) {
 	static const size_t masksSize = 6;
 	//optimize masks
 	static unsigned short masks[masksSize] =
@@ -139,7 +139,7 @@ void execute(Z80Cpu* z80Cpu) {
 	unsigned short opcode16 = 0;
 	if (!success) {
 		opcode16 = (opcode8 << 8) | fetch(z80Cpu);
-		index = evaluate16(opcode16);
+		index = evaluate(opcode16);
 	}
 
 	switch (index)
@@ -158,7 +158,6 @@ void execute(Z80Cpu* z80Cpu) {
 	}
 	case LD_R_HL:
 	{
-		//unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
 		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
 		printf("LD_R_HL\n");
 		break;
@@ -169,7 +168,6 @@ void execute(Z80Cpu* z80Cpu) {
 		break;
 	case LD_HL_N:
 	{
-		//unsigned short HL = (z80Cpu->basicGpRegisters[H] << 8) | z80Cpu->basicGpRegisters[L];
 		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		printf("LD_HL_N\n");
 		break;
@@ -184,20 +182,20 @@ void execute(Z80Cpu* z80Cpu) {
 		switch (dd)//make function
 		{
 		case 0b00:
-			z80Cpu->basicGpRegisters[B] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
-			z80Cpu->basicGpRegisters[C] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+			*z80Cpu->BC = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
+			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b01:
-			z80Cpu->basicGpRegisters[D] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
-			z80Cpu->basicGpRegisters[E] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+			*z80Cpu->DE = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
+			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b10:
-			z80Cpu->basicGpRegisters[H] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
-			z80Cpu->basicGpRegisters[L] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+			*z80Cpu->HL = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
+			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b11:
-			z80Cpu->spRegisters16[SP] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++] << 8;
-			z80Cpu->spRegisters16[SP] |= z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+			z80Cpu->spRegisters16[SP] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
+			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		default:
 			printf("LD_DD_NN OPCODE ERROR\n");
