@@ -35,6 +35,7 @@ enum OPCODES
 	TEST,
 	//11
 	EX_DE_HL,
+	JP_NN,
 	//16 bit opcodes
 	LD_R_IY_D,
 	LD_R_IX_D,

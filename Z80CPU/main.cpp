@@ -11,6 +11,10 @@ unsigned char programm[] =
 
 	0b01110001,		//LD_HL_R
 
+	0xC3,			//JP_NN
+	23,
+	0b00000000,
+
 	0b00000000,		//NOP
 
 	0b00100110,		//LD_R_N
@@ -41,8 +45,6 @@ unsigned char programm[] =
 
 	0b00100110,		//LD_R_N
 	0b10001111,
-
-	
 
 };
 const size_t programmSize = sizeof(programm) / sizeof(programm[0]);

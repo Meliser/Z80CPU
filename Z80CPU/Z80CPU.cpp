@@ -24,6 +24,7 @@ static unsigned char block11[] =
 {
 	//11
 	0xEB,//EX_DE_HL
+	0xC3,//JP_NN
 };
 unsigned char* opcodes8[] =
 {
@@ -144,28 +145,6 @@ void execute(Z80Cpu* z80Cpu) {
 
 	switch (index)
 	{
-	case EX_DE_HL:
-	{
-		swap(z80Cpu->DE,z80Cpu->HL);
-		printf("EX_DE_HL\n");
-		break;
-	}
-	case LD_HL_R://test
-	{
-		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
-		printf("LD_HL_R\n");
-		break;
-	}
-	case LD_R_HL:
-	{
-		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
-		printf("LD_R_HL\n");
-		break;
-	}
-	case LD_R1_R2:
-		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
-		printf("LD_R1_R2\n");
-		break;
 	case LD_HL_N:
 	{
 		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
@@ -183,30 +162,54 @@ void execute(Z80Cpu* z80Cpu) {
 		{
 		case 0b00:
 			*z80Cpu->BC = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
-			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b01:
 			*z80Cpu->DE = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
-			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b10:
 			*z80Cpu->HL = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
-			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		case 0b11:
 			z80Cpu->spRegisters16[SP] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
-			z80Cpu->spRegisters16[PC] += 2;
 			break;
 		default:
+			z80Cpu->running = false;
 			printf("LD_DD_NN OPCODE ERROR\n");
 			break;
 		}
+		z80Cpu->spRegisters16[PC] += 2;
 		printf("LD_DD_NN\n");
 		break;
 	}
 	case NOP:
 		z80Cpu->running = false;
 		printf("NOP\n");
+		break;
+	case LD_HL_R://test
+	{
+		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		printf("LD_HL_R\n");
+		break;
+	}
+	case LD_R_HL:
+	{
+		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
+		printf("LD_R_HL\n");
+		break;
+	}
+	case LD_R1_R2:
+		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		printf("LD_R1_R2\n");
+		break;
+	case EX_DE_HL:
+	{
+		swap(z80Cpu->DE,z80Cpu->HL);
+		printf("EX_DE_HL\n");
+		break;
+	}
+	case JP_NN:
+		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
+		printf("JP_NN\n");
 		break;
 	case LD_R_IY_D://test signed d
 	{
