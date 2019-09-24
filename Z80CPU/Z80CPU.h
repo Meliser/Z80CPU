@@ -24,6 +24,7 @@ enum OPCODES
 	//8 bit opcodes
 	//00
 	LD_HL_N,
+	JR_E, //test
 	LD_R_N,
 	LD_DD_NN,
 	NOP,

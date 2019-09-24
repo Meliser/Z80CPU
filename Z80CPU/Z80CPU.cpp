@@ -5,6 +5,7 @@ static unsigned char block00[] =
 {
 	//00
 	0x36,//LD_HL_N
+	0x18,//JR_E
 	0x06,//LD_R_N
 	0x01,//LD_DD_NN
 	0x00, //NOP
@@ -185,7 +186,7 @@ void execute(Z80Cpu* z80Cpu) {
 		z80Cpu->running = false;
 		printf("NOP\n");
 		break;
-	case LD_HL_R://test
+	case LD_HL_R:
 	{
 		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
 		printf("LD_HL_R\n");
