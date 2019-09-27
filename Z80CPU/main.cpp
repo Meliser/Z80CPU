@@ -11,14 +11,14 @@ unsigned char programm[] =
 
 	0b01110001,		//LD_HL_R
 
-	0xC3,			//JP_NN
-	23,
-	0b00000000,
-
-	0b00000000,		//NOP
-
 	0b00100110,		//LD_R_N
 	0b01001001,
+
+	0b10000100,		//ADD_A_R
+
+	0b10000100,		//ADD_A_R
+
+	0b00000000,		//NOP
 
 	0b00010110,		//LD_R_N
 	0b00101000,
@@ -54,13 +54,6 @@ int main()
 {
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
-	
-	/**z80Cpu->DE = 0xffee;
-	*z80Cpu->HL = 0xccdd;
-
-	printf("%X\n", *z80Cpu->DE);
-	swap(&z80Cpu->DE, &z80Cpu->HL);
-	printf("%X", *z80Cpu->DE);*/
 	
 	memcpy(z80Cpu->ram, programm, programmSize);
 

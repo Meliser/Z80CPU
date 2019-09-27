@@ -33,7 +33,7 @@ enum OPCODES
 	LD_R_HL,
 	LD_R1_R2,
 	//10
-	TEST,
+	ADD_A_R,
 	//11
 	EX_DE_HL,
 	JP_NN,

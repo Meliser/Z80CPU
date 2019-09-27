@@ -19,7 +19,8 @@ static unsigned char block01[] =
 };
 static unsigned char block10[1] =
 {
-	0xBF // for test
+	//10
+	0x80 // ADD_A_R
 };
 static unsigned char block11[] =
 {
@@ -201,6 +202,12 @@ void execute(Z80Cpu* z80Cpu) {
 	case LD_R1_R2:
 		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
 		printf("LD_R1_R2\n");
+		break;
+	case ADD_A_R:
+		z80Cpu->basicGpRegisters[A] += z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		//does not work
+		(z80Cpu->basicGpRegisters[A] >> 7) & 1 ? z80Cpu->basicGpRegisters[F] | 0x80 : z80Cpu->basicGpRegisters[F] & 0x7F;
+		printf("ADD_A_R\n");
 		break;
 	case EX_DE_HL:
 	{
