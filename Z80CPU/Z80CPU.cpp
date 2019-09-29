@@ -208,12 +208,7 @@ void execute(Z80Cpu* z80Cpu) {
 		unsigned char tempA = z80Cpu->basicGpRegisters[A];
 		unsigned char reg = opcode8 & 0b00000111;
 		z80Cpu->basicGpRegisters[A] += z80Cpu->basicGpRegisters[reg];
-		//H is set if carry from bit 3; otherwise, it is reset
-		(tempA & 0x10) ^
-			(reg & 0x10) ^
-			(z80Cpu->basicGpRegisters[A]) ?
-			SET_CONDITION_BIT(CB_H) :
-			RESET_CONDITION_BIT(CB_H);
+		
 		//S is set if result is negative; otherwise, it is reset
 		(z80Cpu->basicGpRegisters[A] >> 7) & 1 ?
 			SET_CONDITION_BIT(CB_S) :
@@ -222,13 +217,19 @@ void execute(Z80Cpu* z80Cpu) {
 		z80Cpu->basicGpRegisters[A] == 0 ?
 			SET_CONDITION_BIT(CB_Z) :
 			RESET_CONDITION_BIT(CB_Z);
+		//H is set if carry from bit 3; otherwise, it is reset
+		(tempA & 0x10) ^
+		(reg & 0x10) ^
+		(z80Cpu->basicGpRegisters[A]) ?
+			SET_CONDITION_BIT(CB_H) :
+			RESET_CONDITION_BIT(CB_H);
 		//P/V is set if overflow; otherwise, it is reset
 		(char)tempA > 0 and
-			(char)reg > 0 and
-			(char)z80Cpu->basicGpRegisters[A] > 0 or
-			(char)tempA < 0 and
-			(char)reg < 0 and
-			(char)z80Cpu->basicGpRegisters[A] < 0 ?
+		(char)reg > 0 and
+		(char)z80Cpu->basicGpRegisters[A] > 0 or
+		(char)tempA < 0 and
+		(char)reg < 0 and
+		(char)z80Cpu->basicGpRegisters[A] < 0 ?
 			RESET_CONDITION_BIT(CB_PV) :
 			SET_CONDITION_BIT(CB_PV);
 		//N is reset

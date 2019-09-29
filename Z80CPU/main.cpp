@@ -1,7 +1,12 @@
-
+#define BOOST_DATE_TIME_NO_LIB
+#include <fstream>
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 #include "Z80CPU.h"
 #include "dbg.h"
 
+using std::ifstream;
+using namespace boost::interprocess;
 
 unsigned char programm[] =
 {
@@ -58,7 +63,13 @@ int main()
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
 	
-	memcpy(z80Cpu->ram, programm, programmSize);
+	system("zcl.exe PROGRAMM.ASM");
+	file_mapping m_file("programm.obj", read_only);
+	mapped_region region(m_file, read_only);
+	const void* addr = region.get_address();
+	std::size_t size = region.get_size();
+
+	memcpy(z80Cpu->ram, addr, size);
 
 	while (z80Cpu->running) {
 		execute(z80Cpu);

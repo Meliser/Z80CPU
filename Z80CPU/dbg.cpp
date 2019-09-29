@@ -33,8 +33,8 @@ void registersDump(Z80Cpu* z80Cpu) {
 	};
 	unsigned char changedSp8[SP_REGISTERS8_SIZE] =
 	{
-		z80Cpu->spRegisters8[I] ^ previousGp[I],
-		z80Cpu->spRegisters8[R] ^ previousGp[R]
+		z80Cpu->spRegisters8[I] ^ previousSp8[I],
+		z80Cpu->spRegisters8[R] ^ previousSp8[R]
 	};
 	unsigned short changedSp16[SP_REGISTERS16_SIZE] =
 	{
@@ -84,13 +84,13 @@ void registersDump(Z80Cpu* z80Cpu) {
 	SetConsoleTextAttribute(hConsole, color);
 	printf("A' = 0x%02X \n\n", z80Cpu->additionalGpRegisters[A]);
 
-	color = changedGp[I] ? GREEN : GREY;
+	color = changedSp8[I] ? GREEN : GREY;
 	SetConsoleTextAttribute(hConsole, color);
-	printf("I = 0x%02X \t", z80Cpu->basicGpRegisters[I]);
+	printf("I = 0x%02X \t", z80Cpu->spRegisters8[I]);
 
-	color = changedGp[R] ? GREEN : GREY;
+	color = changedSp8[R] ? GREEN : GREY;
 	SetConsoleTextAttribute(hConsole, color);
-	printf("R = 0x%02X", z80Cpu->basicGpRegisters[R]);
+	printf("R = 0x%02X", z80Cpu->spRegisters8[R]);
 
 	static const char* spMnem[SP_REGISTERS16_SIZE] = { "IX","IY","SP","PC" };
 	for (size_t i = 0; i < SP_REGISTERS16_SIZE; i++)
