@@ -5,20 +5,22 @@
 
 unsigned char programm[] =
 {
+	
+	0b00100110,		//LD_R_N
+	0b10000000,
+
+	0b00111110,		//LD_R_N
+	0b10000000,
+
+	0b10000100,		//ADD_A_R
+
+	0b00000000,		//NOP
+
 	0b00100001,		//LD_DD_NN
 	0b11111111,
 	0b10101010,
 
 	0b01110001,		//LD_HL_R
-
-	0b00100110,		//LD_R_N
-	0b01001001,
-
-	0b10000100,		//ADD_A_R
-
-	0b10000100,		//ADD_A_R
-
-	0b00000000,		//NOP
 
 	0b00010110,		//LD_R_N
 	0b00101000,
@@ -52,6 +54,7 @@ const size_t programmSize = sizeof(programm) / sizeof(programm[0]);
 
 int main()
 {
+	
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
 	

@@ -18,6 +18,12 @@ enum SP_REGISTERS16 : unsigned char
 {
 	IX, IY, SP, PC, SP_REGISTERS16_SIZE
 };
+enum CONDITION_BITS
+{
+	CB_C, CB_N, CB_PV, NOT_USED1, CB_H, NOT_USED2, CB_Z, CB_S
+};
+#define SET_CONDITION_BIT(bit) (z80Cpu->basicGpRegisters[F] |=  (1 << bit))
+#define RESET_CONDITION_BIT(bit) (z80Cpu->basicGpRegisters[F] &= ~(1 << bit))
 
 enum OPCODES
 {
@@ -76,6 +82,10 @@ size_t evaluate(unsigned char opcode, bool& success);
 size_t evaluate(unsigned short opcode);
 
 void execute(Z80Cpu* z80Cpu);
+
+//void setConditionBit(CONDITION_BITS bit);
+//
+//void resetConditionBit(CONDITION_BITS bit);
 
 void swap(unsigned short* leftPtr, unsigned short* rightPtr);
 

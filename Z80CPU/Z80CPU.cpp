@@ -204,11 +204,42 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("LD_R1_R2\n");
 		break;
 	case ADD_A_R:
-		z80Cpu->basicGpRegisters[A] += z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
-		//does not work
-		(z80Cpu->basicGpRegisters[A] >> 7) & 1 ? z80Cpu->basicGpRegisters[F] | 0x80 : z80Cpu->basicGpRegisters[F] & 0x7F;
+	{
+		unsigned char tempA = z80Cpu->basicGpRegisters[A];
+		unsigned char reg = opcode8 & 0b00000111;
+		z80Cpu->basicGpRegisters[A] += z80Cpu->basicGpRegisters[reg];
+		//H is set if carry from bit 3; otherwise, it is reset
+		(tempA & 0x10) ^
+			(reg & 0x10) ^
+			(z80Cpu->basicGpRegisters[A]) ?
+			SET_CONDITION_BIT(CB_H) :
+			RESET_CONDITION_BIT(CB_H);
+		//S is set if result is negative; otherwise, it is reset
+		(z80Cpu->basicGpRegisters[A] >> 7) & 1 ?
+			SET_CONDITION_BIT(CB_S) :
+			RESET_CONDITION_BIT(CB_S);
+		//Z is set if result is 0; otherwise, it is reset
+		z80Cpu->basicGpRegisters[A] == 0 ?
+			SET_CONDITION_BIT(CB_Z) :
+			RESET_CONDITION_BIT(CB_Z);
+		//P/V is set if overflow; otherwise, it is reset
+		(char)tempA > 0 and
+			(char)reg > 0 and
+			(char)z80Cpu->basicGpRegisters[A] > 0 or
+			(char)tempA < 0 and
+			(char)reg < 0 and
+			(char)z80Cpu->basicGpRegisters[A] < 0 ?
+			RESET_CONDITION_BIT(CB_PV) :
+			SET_CONDITION_BIT(CB_PV);
+		//N is reset
+		RESET_CONDITION_BIT(CB_N);
+		//C is set if carry from bit 7; otherwise, it is reset
+		z80Cpu->basicGpRegisters[A] < tempA + reg ?
+			SET_CONDITION_BIT(CB_C) :
+			RESET_CONDITION_BIT(CB_C);
 		printf("ADD_A_R\n");
 		break;
+	}
 	case EX_DE_HL:
 	{
 		swap(z80Cpu->DE,z80Cpu->HL);
