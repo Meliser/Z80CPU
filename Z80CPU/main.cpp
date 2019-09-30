@@ -62,13 +62,8 @@ int main()
 	
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
-	memcpy(z80Cpu->ram, programm, programmSize);
-	unsigned int op = 0;
-	for (size_t i = 0; i < 4; i++)
-	{
-		(op <<= 8) |= fetch(z80Cpu);
-	}
-	
+	//memcpy(z80Cpu->ram, programm, programmSize);
+
 	//system("zcl.exe PROGRAMM.ASM");
 
 	file_mapping m_file("programm.obj", read_write);

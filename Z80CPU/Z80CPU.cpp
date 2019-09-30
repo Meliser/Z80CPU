@@ -135,8 +135,47 @@ unsigned char fetch(Z80Cpu* z80Cpu) {
 
 	return j + opcodesOffsets[4];
 }
-
+ template<typename T>
+ bool evaluate(unsigned int opcode,T* table,size_t tableSize, size_t& index) {
+	 //full search
+	 for (size_t i = 0; i < tableSize; i++,index++)
+	 {
+		 if (opcode == table[i]) {
+			 return true;
+		 }
+	 }
+	 //search by masks
+	 unsigned char masks[3] =
+	 {
+		 0b11000111,
+		 0b11111000,
+		 0b11000000,
+	 };
+	 for (size_t i = 0; i < 3; i++)
+	 {
+		 opcode &= masks[i];
+		 index = 0;
+		 for (size_t j = 0; j < length; j++, index++)
+		 {
+			 if (opcode == table[j]) {
+				 return true;
+			 }
+		 }
+	 }
+	 return false;
+ }
 void execute(Z80Cpu* z80Cpu) {
+
+	/*do
+	{
+		op = (op << 8) | fetch(z80Cpu);
+	}
+	while (evaluate(op, ind));*/
+
+	size_t ind;
+	unsigned int op = fetch(z80Cpu);
+	evaluate(op, opcodes8, ind)
+	
 	unsigned char opcode8 = fetch(z80Cpu);
 	bool success = true;
 	size_t index = evaluate(opcode8, success);
