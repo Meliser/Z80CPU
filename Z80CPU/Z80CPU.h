@@ -42,6 +42,8 @@ enum OPCODES
 	ADD_A_R,
 	//11
 	EX_DE_HL,
+	CALL_NN,
+	RET,
 	JP_NN,
 	//16 bit opcodes
 	LD_R_IY_D,

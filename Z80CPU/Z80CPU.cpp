@@ -26,6 +26,8 @@ static unsigned char block11[] =
 {
 	//11
 	0xEB,//EX_DE_HL
+	0xCD,//CALL_NN
+	0xC9, //RET
 	0xC3,//JP_NN
 };
 unsigned char* opcodes8[] =
@@ -247,6 +249,18 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("EX_DE_HL\n");
 		break;
 	}
+	case CALL_NN:
+		z80Cpu->spRegisters16[SP]-=2;
+		*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC] + 2;
+		//printf("%x", z80Cpu->ram[z80Cpu->spRegisters16[SP]+1]);
+		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram+z80Cpu->spRegisters16[PC]));
+		printf("CALL_NN\n");
+		break;
+	case RET:
+		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram+z80Cpu->spRegisters16[SP]));
+		z80Cpu->spRegisters16[SP] += 2;
+		printf("RET\n");
+		break;
 	case JP_NN:
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
 		printf("JP_NN\n");

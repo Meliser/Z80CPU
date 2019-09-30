@@ -62,14 +62,27 @@ int main()
 	
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
+	memcpy(z80Cpu->ram, programm, programmSize);
+	unsigned int op = 0;
+	for (size_t i = 0; i < 4; i++)
+	{
+		(op <<= 8) |= fetch(z80Cpu);
+	}
 	
-	system("zcl.exe PROGRAMM.ASM");
-	file_mapping m_file("programm.obj", read_only);
-	mapped_region region(m_file, read_only);
+	//system("zcl.exe PROGRAMM.ASM");
+
+	file_mapping m_file("programm.obj", read_write);
+	mapped_region region(m_file, read_write);
 	const void* addr = region.get_address();
 	std::size_t size = region.get_size();
 
+	file_mapping m_file1("func.obj", read_write);
+	mapped_region region1(m_file1, read_write);
+	const void* addr1 = region1.get_address();
+	std::size_t size1 = region1.get_size();
+
 	memcpy(z80Cpu->ram, addr, size);
+	memcpy(z80Cpu->ram+0xaaff, addr1, size1);
 
 	while (z80Cpu->running) {
 		execute(z80Cpu);
