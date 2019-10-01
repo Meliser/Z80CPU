@@ -10,9 +10,18 @@ using namespace boost::interprocess;
 
 unsigned char programm[] =
 {
-	
+	0b01110001,		//LD_HL_R
+
 	0b00100110,		//LD_R_N
 	0b10000000,
+
+	0b11011101,		//LD_R_IX_D
+	0b01101110,
+	0b00000101,
+
+	0b11111101,		//LD_R_IY_D
+	0b01101110,
+	0b00000001,
 
 	0b00111110,		//LD_R_N
 	0b10000000,
@@ -24,8 +33,6 @@ unsigned char programm[] =
 	0b00100001,		//LD_DD_NN
 	0b11111111,
 	0b10101010,
-
-	0b01110001,		//LD_HL_R
 
 	0b00010110,		//LD_R_N
 	0b00101000,
@@ -62,11 +69,11 @@ int main()
 	
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
-	//memcpy(z80Cpu->ram, programm, programmSize);
+	memcpy(z80Cpu->ram, programm, programmSize);
 
 	//system("zcl.exe PROGRAMM.ASM");
 
-	file_mapping m_file("programm.obj", read_write);
+	/*file_mapping m_file("programm.obj", read_write);
 	mapped_region region(m_file, read_write);
 	const void* addr = region.get_address();
 	std::size_t size = region.get_size();
@@ -77,7 +84,7 @@ int main()
 	std::size_t size1 = region1.get_size();
 
 	memcpy(z80Cpu->ram, addr, size);
-	memcpy(z80Cpu->ram+0xaaff, addr1, size1);
+	memcpy(z80Cpu->ram+0xaaff, addr1, size1);*/
 
 	while (z80Cpu->running) {
 		execute(z80Cpu);

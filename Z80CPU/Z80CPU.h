@@ -48,7 +48,6 @@ enum OPCODES
 	//16 bit opcodes
 	LD_R_IY_D,
 	LD_R_IX_D,
-
 	OPCODES_SIZE
 };
 
@@ -79,15 +78,44 @@ void init(Z80Cpu* z80Cpu);
 
 unsigned char fetch(Z80Cpu* z80Cpu);
 
-size_t evaluate(unsigned char opcode, bool& success);
-
-size_t evaluate(unsigned short opcode);
+template<typename T>
+bool evaluate(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
+	size_t temp = index;
+	//complete search
+	for (size_t i = 0; i < tableSize; i++, index++)
+	{
+		if (opcode == table[i])
+		{
+			return true;
+		}
+	}
+	//search by masks
+	static unsigned short masks[6] =
+	{
+		0xffc7,// (1)11000111
+		0xfff8,// (1)11111000
+		0xffc0,// (1)11000000
+		0xc7ff,// 11000111(1)
+		0xf8ff,// 11111000(1)
+		0xc0ff,// 11000000(1)
+	};
+	unsigned short currentTemplate;
+	for (size_t i = 0; i < 6; i++)
+	{
+		currentTemplate = opcode & masks[i];
+		index = temp;
+		for (size_t j = 0; j < tableSize; j++, index++)
+		{
+			if (currentTemplate == table[j])
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 void execute(Z80Cpu* z80Cpu);
-
-//void setConditionBit(CONDITION_BITS bit);
-//
-//void resetConditionBit(CONDITION_BITS bit);
 
 void swap(unsigned short* leftPtr, unsigned short* rightPtr);
 

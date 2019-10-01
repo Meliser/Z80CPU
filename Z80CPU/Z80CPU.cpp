@@ -1,70 +1,57 @@
 #include "Z80CPU.h"
 
 //available 8 bit opcodes
-static unsigned char block00[] =
+static unsigned char opcodes8[] =
 {
 	//00
-	0x36,//LD_HL_N
-	0x18,//JR_E
-	0x06,//LD_R_N
-	0x01,//LD_DD_NN
+	0x36, //LD_HL_N
+	0x18, //JR_E
+	0x06, //LD_R_N
+	0x01, //LD_DD_NN
 	0x00, //NOP
-};
-static unsigned char block01[] =
-{
 	//01
-	0x70,//LD_HL_R
-	0x46,//LD_R_HL
-	0x40,//LD_R1_R2
-};
-static unsigned char block10[1] =
-{
+	0x70, //LD_HL_R
+	0x46, //LD_R_HL
+	0x40, //LD_R1_R2
 	//10
-	0x80 // ADD_A_R
-};
-static unsigned char block11[] =
-{
+	0x80, // ADD_A_R
 	//11
-	0xEB,//EX_DE_HL
-	0xCD,//CALL_NN
+	0xEB, //EX_DE_HL
+	0xCD, //CALL_NN
 	0xC9, //RET
-	0xC3,//JP_NN
+	0xC3, //JP_NN
 };
-unsigned char* opcodes8[] =
-{
-	block00,block01,block10,block11
-};
-const size_t opcodesSizes[4] =
-{	
-	sizeof(block00) / sizeof(block00[0]),
-	sizeof(block01) / sizeof(block01[0]),
-	sizeof(block10) / sizeof(block10[0]),
-	sizeof(block11) / sizeof(block11[0]),
-};
-const size_t opcodesOffsets[5] =
-{
-	0,
-	opcodesSizes[0],
-	opcodesSizes[0] + opcodesSizes[1],
-	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2],
-	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2] + opcodesSizes[3]
-};
+const size_t opcodes8Size = sizeof(opcodes8) / sizeof(opcodes8[0]);
+//unsigned char* opcodes8[] =
+//{
+//	block00,block01,block10,block11
+//};
+//const size_t opcodesSizes[4] =
+//{	
+//	sizeof(block00) / sizeof(block00[0]),
+//	sizeof(block01) / sizeof(block01[0]),
+//	sizeof(block10) / sizeof(block10[0]),
+//	sizeof(block11) / sizeof(block11[0]),
+//};
+//const size_t opcodesOffsets[5] =
+//{
+//	0,
+//	opcodesSizes[0],
+//	opcodesSizes[0] + opcodesSizes[1],
+//	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2],
+//	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2] + opcodesSizes[3]
+//};
 //available 16 bit opcodes
 static unsigned short opcodes16[] =
 {
-	0b1111110101000110,//LD_R_IY_D
+	0b1111110101000110, //LD_R_IY_D
 	0b1101110101000110, //LD_R_IX_D
 };
 const size_t opcodes16Size = sizeof(opcodes16) / sizeof(opcodes16[0]);
 
 void init(Z80Cpu* z80Cpu)
 {
-	assert(!(	opcodesSizes[0] +
-				opcodesSizes[1] + 
-				opcodesSizes[2] +
-				opcodesSizes[3] +
-				opcodes16Size -
-				OPCODES_SIZE));
+	assert(opcodes8Size + opcodes16Size == OPCODES_SIZE);
 
 	z80Cpu->BC = (unsigned short*)(z80Cpu->basicGpRegisters + B);
 	z80Cpu->DE = (unsigned short*)(z80Cpu->basicGpRegisters + D);
@@ -82,108 +69,16 @@ unsigned char fetch(Z80Cpu* z80Cpu) {
 	return z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 }
 
- size_t evaluate(unsigned char opcode,bool &success) {
-	static const size_t masksSize = 2;
-	static unsigned char masks[masksSize] =
-	{
-		0b00111000,
-		0b00000111
-	};
-	unsigned char block = opcode >> 6;
-	unsigned char* currentBlock = opcodes8[block];
-	size_t j = 0;
-	for (size_t i = 0; i < masksSize; i++)
-	{
-		for (; j < opcodesSizes[block]; j++)
-		{
-			if (((currentBlock[j] & masks[i]) == 0) or (opcode & masks[i]) == (currentBlock[j] & masks[i]))
-			{
-				break;
-			}
-		}
-	}
-	if (j == opcodesSizes[block]) {
-		success = false;
-	}
-	return j + opcodesOffsets[block];
-}
-
- size_t evaluate(unsigned short opcode) {
-	static const size_t masksSize = 6;
-	//optimize masks
-	static unsigned short masks[masksSize] =
-	{
-		0b1100000000000000,
-		0b0011100000000000,
-		0b0000011100000000,
-		0b0000000011000000,
-		0b0000000000111000,
-		0b0000000000000111
-	};
-
-	size_t j = 0;
-	for (size_t i = 0; i < masksSize; i++)
-	{
-		for (; j < opcodes16Size; j++)
-		{
-			if (((opcodes16[j] & masks[i]) == 0) or (opcode & masks[i]) == (opcodes16[j] & masks[i]))
-			{
-				break;
-			}
-		}
-	}
-
-	return j + opcodesOffsets[4];
-}
- template<typename T>
- bool evaluate(unsigned int opcode,T* table,size_t tableSize, size_t& index) {
-	 //full search
-	 for (size_t i = 0; i < tableSize; i++,index++)
-	 {
-		 if (opcode == table[i]) {
-			 return true;
-		 }
-	 }
-	 //search by masks
-	 unsigned char masks[3] =
-	 {
-		 0b11000111,
-		 0b11111000,
-		 0b11000000,
-	 };
-	 for (size_t i = 0; i < 3; i++)
-	 {
-		 opcode &= masks[i];
-		 index = 0;
-		 for (size_t j = 0; j < length; j++, index++)
-		 {
-			 if (opcode == table[j]) {
-				 return true;
-			 }
-		 }
-	 }
-	 return false;
- }
 void execute(Z80Cpu* z80Cpu) {
 
-	/*do
+	// add evaluation of extended opcodes
+	// test evaluation of 16 bits opcodes
+	size_t index = 0;
+	unsigned int opcode = fetch(z80Cpu);
+	if (!evaluate(opcode, opcodes8, opcodes8Size, index))
 	{
-		op = (op << 8) | fetch(z80Cpu);
-	}
-	while (evaluate(op, ind));*/
-
-	size_t ind;
-	unsigned int op = fetch(z80Cpu);
-	evaluate(op, opcodes8, ind)
-	
-	unsigned char opcode8 = fetch(z80Cpu);
-	bool success = true;
-	size_t index = evaluate(opcode8, success);
-
-	unsigned short opcode16 = 0;
-	if (!success) {
-		opcode16 = (opcode8 << 8) | fetch(z80Cpu);
-		index = evaluate(opcode16);
+		opcode = (opcode << 8) | fetch(z80Cpu);
+		evaluate(opcode, opcodes16, opcodes16Size, index);
 	}
 
 	switch (index)
@@ -195,12 +90,12 @@ void execute(Z80Cpu* z80Cpu) {
 		break;
 	}
 	case LD_R_N:
-		z80Cpu->basicGpRegisters[opcode8 >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		z80Cpu->basicGpRegisters[opcode >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		printf("LD_R_N\n");
 		break;
 	case LD_DD_NN:
 	{
-		unsigned char dd = (opcode8 & 0x30) >> 4;
+		unsigned char dd = (opcode & 0x30) >> 4;
 		switch (dd)//make function
 		{
 		case 0b00:
@@ -230,24 +125,24 @@ void execute(Z80Cpu* z80Cpu) {
 		break;
 	case LD_HL_R:
 	{
-		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode & 0b00000111];
 		printf("LD_HL_R\n");
 		break;
 	}
 	case LD_R_HL:
 	{
-		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
+		z80Cpu->basicGpRegisters[(opcode & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
 		printf("LD_R_HL\n");
 		break;
 	}
 	case LD_R1_R2:
-		z80Cpu->basicGpRegisters[(opcode8 & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode8 & 0b00000111];
+		z80Cpu->basicGpRegisters[(opcode & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode & 0b00000111];
 		printf("LD_R1_R2\n");
 		break;
 	case ADD_A_R:
 	{
 		unsigned char tempA = z80Cpu->basicGpRegisters[A];
-		unsigned char reg = opcode8 & 0b00000111;
+		unsigned char reg = opcode & 0b00000111;
 		z80Cpu->basicGpRegisters[A] += z80Cpu->basicGpRegisters[reg];
 		
 		//S is set if result is negative; otherwise, it is reset
@@ -307,14 +202,14 @@ void execute(Z80Cpu* z80Cpu) {
 	case LD_R_IY_D://test signed d
 	{
 		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
-		z80Cpu->basicGpRegisters[(opcode16 & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IY] + d];
+		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IY] + d];
 		printf("LD_R_IY_D\n");
 		break;
 	}
 	case LD_R_IX_D://test signed d
 	{
 		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
-		z80Cpu->basicGpRegisters[(opcode16 & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IX] + d];
+		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IX] + d];
 		printf("LD_R_IX_D\n");
 		break;
 	}
