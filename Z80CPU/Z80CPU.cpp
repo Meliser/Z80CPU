@@ -42,10 +42,12 @@ const size_t opcodes8Size = sizeof(opcodes8) / sizeof(opcodes8[0]);
 //	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2] + opcodesSizes[3]
 //};
 //available 16 bit opcodes
+
 static unsigned short opcodes16[] =
 {
 	0b1111110101000110, //LD_R_IY_D
 	0b1101110101000110, //LD_R_IX_D
+	0b1100101101000000, //BIT_B_R
 };
 const size_t opcodes16Size = sizeof(opcodes16) / sizeof(opcodes16[0]);
 
@@ -211,6 +213,18 @@ void execute(Z80Cpu* z80Cpu) {
 		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IX] + d];
 		printf("LD_R_IX_D\n");
+		break;
+	}
+	case BIT_B_R:
+	{
+		z80Cpu->basicGpRegisters[opcode & 0b111] &
+		(1 << (opcode & 0b111000)) ?
+			RESET_CONDITION_BIT(CB_Z) :
+			SET_CONDITION_BIT(CB_Z);
+
+		SET_CONDITION_BIT(CB_H);
+		RESET_CONDITION_BIT(CB_N);
+		printf("BIT_B_R\n");
 		break;
 	}
 	default:

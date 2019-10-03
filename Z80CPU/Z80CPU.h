@@ -48,6 +48,7 @@ enum OPCODES
 	//16 bit opcodes
 	LD_R_IY_D,
 	LD_R_IX_D,
+	BIT_B_R,
 	OPCODES_SIZE
 };
 
@@ -95,6 +96,7 @@ bool evaluate(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
 		0xffc7,// (1)11000111
 		0xfff8,// (1)11111000
 		0xffc0,// (1)11000000
+		//not used
 		0xc7ff,// 11000111(1)
 		0xf8ff,// 11111000(1)
 		0xc0ff,// 11000000(1)
