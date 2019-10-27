@@ -1,6 +1,7 @@
 #pragma once
-#include "Z80CPU.h"
 
+#include <Windows.h>
+#include "Z80CPU.h"
 enum COLOR : unsigned char
 {GREEN = 2,GREY = 7};
 
