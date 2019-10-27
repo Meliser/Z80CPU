@@ -106,7 +106,7 @@ void registersDump(Z80Cpu* z80Cpu) {
 
 	SetConsoleTextAttribute(hConsole, (WORD)GREY);
 	printf("\n\n\n");
-
+	
 	memcpy(previousGp, z80Cpu->basicGpRegisters, GP_REGISTERS_SIZE);
 	memcpy(previousAddGp, z80Cpu->additionalGpRegisters, GP_REGISTERS_SIZE);
 	memcpy(previousSp8, z80Cpu->spRegisters8, SP_REGISTERS8_SIZE);

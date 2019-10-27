@@ -162,11 +162,11 @@ void execute(Z80Cpu* z80Cpu) {
 			SET_CONDITION_BIT(CB_H) :
 			RESET_CONDITION_BIT(CB_H);
 		//P/V is set if overflow; otherwise, it is reset
-		(char)tempA > 0 and
-		(char)reg > 0 and
-		(char)z80Cpu->basicGpRegisters[A] > 0 or
-		(char)tempA < 0 and
-		(char)reg < 0 and
+		(char)tempA > 0 &&
+		(char)reg > 0 &&
+		(char)z80Cpu->basicGpRegisters[A] > 0 ||
+		(char)tempA < 0 &&
+		(char)reg < 0 &&
 		(char)z80Cpu->basicGpRegisters[A] < 0 ?
 			RESET_CONDITION_BIT(CB_PV) :
 			SET_CONDITION_BIT(CB_PV);
