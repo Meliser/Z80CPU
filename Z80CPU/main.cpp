@@ -1,11 +1,9 @@
 #define BOOST_DATE_TIME_NO_LIB
-#include <fstream>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include "Z80CPU.h"
 #include "dbg.h"
 
-using std::ifstream;
 using namespace boost::interprocess;
 
 unsigned char programm[] =

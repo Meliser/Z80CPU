@@ -20,27 +20,14 @@ static unsigned char opcodes8[] =
 	0xCD, //CALL_NN
 	0xC9, //RET
 	0xC3, //JP_NN
+	//EXTEND
+	0xFD,
+	0xED,
+	0xDD,
+	0xCB
 };
 const size_t opcodes8Size = sizeof(opcodes8) / sizeof(opcodes8[0]);
-//unsigned char* opcodes8[] =
-//{
-//	block00,block01,block10,block11
-//};
-//const size_t opcodesSizes[4] =
-//{	
-//	sizeof(block00) / sizeof(block00[0]),
-//	sizeof(block01) / sizeof(block01[0]),
-//	sizeof(block10) / sizeof(block10[0]),
-//	sizeof(block11) / sizeof(block11[0]),
-//};
-//const size_t opcodesOffsets[5] =
-//{
-//	0,
-//	opcodesSizes[0],
-//	opcodesSizes[0] + opcodesSizes[1],
-//	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2],
-//	opcodesSizes[0] + opcodesSizes[1] + opcodesSizes[2] + opcodesSizes[3]
-//};
+
 //available 16 bit opcodes
 
 static unsigned short opcodes16[] =
@@ -53,7 +40,8 @@ const size_t opcodes16Size = sizeof(opcodes16) / sizeof(opcodes16[0]);
 
 void init(Z80Cpu* z80Cpu)
 {
-	assert(opcodes8Size + opcodes16Size == OPCODES_SIZE);
+	assert(opcodes8Size == OPCODES8_SIZE + 4);
+	assert(opcodes16Size == OPCODES16_SIZE);
 
 	z80Cpu->BC = (unsigned short*)(z80Cpu->basicGpRegisters + B);
 	z80Cpu->DE = (unsigned short*)(z80Cpu->basicGpRegisters + D);
@@ -77,10 +65,10 @@ void execute(Z80Cpu* z80Cpu) {
 	// test evaluation of 16 bits opcodes
 	size_t index = 0;
 	unsigned int opcode = fetch(z80Cpu);
-	if (!evaluate(opcode, opcodes8, opcodes8Size, index))
+
+	if (!search(opcode, opcodes8, opcodes8Size, index))
 	{
-		opcode = (opcode << 8) | fetch(z80Cpu);
-		evaluate(opcode, opcodes16, opcodes16Size, index);
+		evaluate(opcode, opcodes8, opcodes8Size, index);
 	}
 
 	switch (index)
@@ -89,12 +77,12 @@ void execute(Z80Cpu* z80Cpu) {
 	{
 		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		printf("LD_HL_N\n");
-		break;
+		return;
 	}
 	case LD_R_N:
 		z80Cpu->basicGpRegisters[opcode >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		printf("LD_R_N\n");
-		break;
+		return;
 	case LD_DD_NN:
 	{
 		unsigned char dd = (opcode & 0x30) >> 4;
@@ -119,28 +107,28 @@ void execute(Z80Cpu* z80Cpu) {
 		}
 		z80Cpu->spRegisters16[PC] += 2;
 		printf("LD_DD_NN\n");
-		break;
+		return;
 	}
 	case NOP:
 		z80Cpu->running = false;
 		printf("NOP\n");
-		break;
+		return;
 	case LD_HL_R:
 	{
 		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->basicGpRegisters[opcode & 0b00000111];
 		printf("LD_HL_R\n");
-		break;
+		return;
 	}
 	case LD_R_HL:
 	{
 		z80Cpu->basicGpRegisters[(opcode & 0b00111000) >> 3] = z80Cpu->ram[*z80Cpu->HL];
 		printf("LD_R_HL\n");
-		break;
+		return;
 	}
 	case LD_R1_R2:
 		z80Cpu->basicGpRegisters[(opcode & 0b00111000) >> 3] = z80Cpu->basicGpRegisters[opcode & 0b00000111];
 		printf("LD_R1_R2\n");
-		break;
+		return;
 	case ADD_A_R:
 	{
 		unsigned char tempA = z80Cpu->basicGpRegisters[A];
@@ -177,61 +165,73 @@ void execute(Z80Cpu* z80Cpu) {
 			SET_CONDITION_BIT(CB_C) :
 			RESET_CONDITION_BIT(CB_C);
 		printf("ADD_A_R\n");
-		break;
+		return;
 	}
 	case EX_DE_HL:
 	{
 		swap(z80Cpu->DE,z80Cpu->HL);
 		printf("EX_DE_HL\n");
-		break;
+		return;
 	}
 	case CALL_NN:
 		z80Cpu->spRegisters16[SP]-=2;
 		*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC] + 2;
-		//printf("%x", z80Cpu->ram[z80Cpu->spRegisters16[SP]+1]);
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram+z80Cpu->spRegisters16[PC]));
 		printf("CALL_NN\n");
-		break;
+		return;
 	case RET:
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram+z80Cpu->spRegisters16[SP]));
 		z80Cpu->spRegisters16[SP] += 2;
 		printf("RET\n");
-		break;
+		return;
 	case JP_NN:
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
 		printf("JP_NN\n");
-		break;
+		return;
+	
+	default:
+		opcode = (opcode << 8) | fetch(z80Cpu);
+		index = 0;
+		if (!search(opcode, opcodes16, opcodes16Size, index))
+		{
+			evaluate(opcode, opcodes16, opcodes16Size, index);
+		}
+		printf("EXTENDED OP\n");
+	}
+	switch (index)
+	{
 	case LD_R_IY_D://test signed d
 	{
 		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IY] + d];
 		printf("LD_R_IY_D\n");
-		break;
+		return;
 	}
 	case LD_R_IX_D://test signed d
 	{
 		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
 		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IX] + d];
 		printf("LD_R_IX_D\n");
-		break;
+		return;
 	}
 	case BIT_B_R:
 	{
 		z80Cpu->basicGpRegisters[opcode & 0b111] &
-		(1 << (opcode & 0b111000)) ?
+			(1 << (opcode & 0b111000)) ?
 			RESET_CONDITION_BIT(CB_Z) :
 			SET_CONDITION_BIT(CB_Z);
 
 		SET_CONDITION_BIT(CB_H);
 		RESET_CONDITION_BIT(CB_N);
 		printf("BIT_B_R\n");
-		break;
+		return;
 	}
 	default:
 		z80Cpu->running = false;
 		printf("UNKNOWN OP\n");
-		break;
+		return;
 	}
+	
 }
 
 void swap(unsigned short* leftPtr, unsigned short* rightPtr)

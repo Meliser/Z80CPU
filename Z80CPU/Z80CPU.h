@@ -25,9 +25,9 @@ enum CONDITION_BITS
 #define SET_CONDITION_BIT(bit) (z80Cpu->basicGpRegisters[F] |=  (1 << bit))
 #define RESET_CONDITION_BIT(bit) (z80Cpu->basicGpRegisters[F] &= ~(1 << bit))
 
-enum OPCODES
+//8 bit opcodes
+enum OPCODES8
 {
-	//8 bit opcodes
 	//00
 	LD_HL_N,
 	JR_E, //test
@@ -45,11 +45,18 @@ enum OPCODES
 	CALL_NN,
 	RET,
 	JP_NN,
-	//16 bit opcodes
-	LD_R_IY_D,
-	LD_R_IX_D,
-	BIT_B_R,
-	OPCODES_SIZE
+
+	OPCODES8_SIZE
+};
+
+//16 bit opcodes
+enum OPCODES16
+{
+LD_R_IY_D,
+LD_R_IX_D,
+BIT_B_R,
+
+OPCODES16_SIZE
 };
 
 struct Z80Cpu
@@ -80,32 +87,32 @@ void init(Z80Cpu* z80Cpu);
 unsigned char fetch(Z80Cpu* z80Cpu);
 
 template<typename T>
-bool evaluate(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
+bool search(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
 	size_t temp = index;
-	//complete search
-	for (size_t i = 0; i < tableSize; i++, index++)
+	for (size_t i = 0; i < tableSize; i++,index++)
 	{
-		if (opcode == table[i])
-		{
+		if (opcode == table[i]) {
 			return true;
 		}
 	}
+	index = temp;
+	return false;
+}
+template<typename T>
+bool evaluate(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
 	//search by masks
-	static unsigned short masks[6] =
+	static unsigned short masks[3] =
 	{
 		0xffc7,// (1)11000111
 		0xfff8,// (1)11111000
 		0xffc0,// (1)11000000
-		//not used
-		0xc7ff,// 11000111(1)
-		0xf8ff,// 11111000(1)
-		0xc0ff,// 11000000(1)
 	};
 	unsigned short currentTemplate;
-	for (size_t i = 0; i < 6; i++)
+	//size_t temp = index;
+	for (size_t i = 0; i < 3; i++)
 	{
 		currentTemplate = opcode & masks[i];
-		index = temp;
+		index = 0;
 		for (size_t j = 0; j < tableSize; j++, index++)
 		{
 			if (currentTemplate == table[j])
