@@ -20,6 +20,7 @@ static unsigned char opcodes8[] =
 	0xCD, //CALL_NN
 	0xC9, //RET
 	0xC3, //JP_NN
+	0xDB, //IN_A_N
 	//EXTEND
 	0xFD,
 	0xED,
@@ -188,7 +189,11 @@ void execute(Z80Cpu* z80Cpu) {
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
 		printf("JP_NN\n");
 		return;
-	
+	case IN_A_N:
+		z80Cpu->basicGpRegisters[A] = z80Cpu->ports[z80Cpu->ram[z80Cpu->spRegisters16[PC]]];
+		z80Cpu->spRegisters16[PC]++;
+		printf("IN_A_N\n");
+		return;
 	default:
 		opcode = (opcode << 8) | fetch(z80Cpu);
 		index = 0;

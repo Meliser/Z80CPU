@@ -45,6 +45,7 @@ enum OPCODES8
 	CALL_NN,
 	RET,
 	JP_NN,
+	IN_A_N,
 
 	OPCODES8_SIZE
 };
@@ -59,9 +60,12 @@ BIT_B_R,
 OPCODES16_SIZE
 };
 
+
+
 struct Z80Cpu
 {
 	unsigned char ram[0x10000];
+	unsigned char ports[256];
 
 	unsigned char basicGpRegisters[GP_REGISTERS_SIZE];
 	unsigned char additionalGpRegisters[GP_REGISTERS_SIZE];

@@ -1,5 +1,5 @@
 #include "dbg.h"
-
+//TODO: use raw console mode
 void registersDump(Z80Cpu* z80Cpu) {
 
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);

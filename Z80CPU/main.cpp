@@ -1,6 +1,8 @@
 #define BOOST_DATE_TIME_NO_LIB
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <conio.h>
+#include <stdio.h>
 #include "Z80CPU.h"
 #include "dbg.h"
 
@@ -65,13 +67,36 @@ unsigned char programm[] =
 };
 const size_t programmSize = sizeof(programm) / sizeof(programm[0]);
 
+unsigned char kbdIntHandler[] =
+{
+	0b11011011,		//IN_A_N
+	0b00000000,
+	
+	0b11001001,		//RET
+};
+const size_t kbdIntHandlerSize = sizeof(kbdIntHandler) / sizeof(kbdIntHandler[0]);
+void checkInterrupt(Z80Cpu* z80Cpu) {
+	if (_kbhit())
+	{
+		z80Cpu->ports[0] = _getch();
+		//check priority
+		//save registers
+	
+		z80Cpu->spRegisters16[SP] -= 2;
+		*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
+		z80Cpu->spRegisters16[PC] = 0xeeee;
+		//handle interrupt;
+		//restore registers
+	}
+
+}
 int main()
 {
 	
 	Z80Cpu* z80Cpu = new Z80Cpu{ 0 };
 	init(z80Cpu);
 	memcpy(z80Cpu->ram, programm, programmSize);
-	
+	memcpy(z80Cpu->ram + 0xeeee, kbdIntHandler, kbdIntHandlerSize);
 	//system("zcl.exe PROGRAMM.ASM");
 
 	/*file_mapping m_file("programm.obj", read_write);
@@ -89,6 +114,7 @@ int main()
 
 	while (z80Cpu->running) {
 		execute(z80Cpu);
+		checkInterrupt(z80Cpu);
 		registersDump(z80Cpu);
 	}
 	
