@@ -71,7 +71,7 @@ void execute(Z80Cpu* z80Cpu) {
 	{
 		evaluate(opcode, opcodes8, opcodes8Size, index);
 	}
-
+	//decode 8 bit opcode, add function
 	switch (index)
 	{
 	case LD_HL_N:
@@ -190,7 +190,13 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("JP_NN\n");
 		return;
 	case IN_A_N:
-		z80Cpu->basicGpRegisters[A] = z80Cpu->ports[z80Cpu->ram[z80Cpu->spRegisters16[PC]]];
+		//z80Cpu->basicGpRegisters[A] = z80Cpu->ports[z80Cpu->ram[z80Cpu->spRegisters16[PC]]];
+		//z80Cpu->basicGpRegisters[A] = z80Cpu->port.ovlp.buffer[0];
+		
+
+		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(z80Cpu->ram[z80Cpu->spRegisters16[PC]])->getBuffer()[0];
+
+		//z80Cpu->port.ovlp.isReady = false;
 		z80Cpu->spRegisters16[PC]++;
 		printf("IN_A_N\n");
 		return;

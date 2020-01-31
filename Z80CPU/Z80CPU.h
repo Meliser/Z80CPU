@@ -2,7 +2,12 @@
 
 #include <stdio.h>
 #include <assert.h>
-
+#include <Windows.h>
+#include <iostream>
+#include <vector>
+#include <thread>
+#include "IOController.h"
+using namespace std;
 //general purpose registers
 enum GP_REGISTERS : unsigned char
 {
@@ -65,7 +70,7 @@ OPCODES16_SIZE
 struct Z80Cpu
 {
 	unsigned char ram[0x10000];
-	unsigned char ports[256];
+	IOController ioController;
 
 	unsigned char basicGpRegisters[GP_REGISTERS_SIZE];
 	unsigned char additionalGpRegisters[GP_REGISTERS_SIZE];
@@ -96,6 +101,7 @@ bool search(unsigned int opcode, T* table, size_t tableSize, size_t& index) {
 	for (size_t i = 0; i < tableSize; i++,index++)
 	{
 		if (opcode == table[i]) {
+			//index += i; ???
 			return true;
 		}
 	}
@@ -132,6 +138,23 @@ void execute(Z80Cpu* z80Cpu);
 
 void swap(unsigned short* leftPtr, unsigned short* rightPtr);
 
+
+static void checkPorts(Z80Cpu* z80Cpu) {
+	
+	//check priority
+	//save registers
+	//handle interrupt;
+	//restore registers
+	auto ports = z80Cpu->ioController.getPorts();
+	
+	for (auto port : ports) {
+		if (port->isReady()) {
+			z80Cpu->spRegisters16[SP] -= 2;
+			*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
+			z80Cpu->spRegisters16[PC] = 0xeeee;
+		}
+	}
+}
 
 
 

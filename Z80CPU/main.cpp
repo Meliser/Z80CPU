@@ -3,11 +3,12 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <conio.h>
 #include <stdio.h>
+
 #include "Z80CPU.h"
 #include "dbg.h"
 
 using namespace boost::interprocess;
-
+using namespace std;
 unsigned char programm[] =
 {
 	0b01110001,		//LD_HL_R
@@ -75,21 +76,9 @@ unsigned char kbdIntHandler[] =
 	0b11001001,		//RET
 };
 const size_t kbdIntHandlerSize = sizeof(kbdIntHandler) / sizeof(kbdIntHandler[0]);
-void checkInterrupt(Z80Cpu* z80Cpu) {
-	if (_kbhit())
-	{
-		z80Cpu->ports[0] = _getch();
-		//check priority
-		//save registers
-	
-		z80Cpu->spRegisters16[SP] -= 2;
-		*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
-		z80Cpu->spRegisters16[PC] = 0xeeee;
-		//handle interrupt;
-		//restore registers
-	}
 
-}
+
+
 int main()
 {
 	
@@ -97,7 +86,6 @@ int main()
 	init(z80Cpu);
 	memcpy(z80Cpu->ram, programm, programmSize);
 	memcpy(z80Cpu->ram + 0xeeee, kbdIntHandler, kbdIntHandlerSize);
-	//system("zcl.exe PROGRAMM.ASM");
 
 	/*file_mapping m_file("programm.obj", read_write);
 	mapped_region region(m_file, read_write);
@@ -111,14 +99,20 @@ int main()
 
 	memcpy(z80Cpu->ram, addr, size);
 	memcpy(z80Cpu->ram+0xaaff, addr1, size1);*/
-
+	
+	IPort* stdIn = new StdIn;
+	stdIn->init();
+	z80Cpu->ioController.attachPort(stdIn);
 	while (z80Cpu->running) {
 		execute(z80Cpu);
-		checkInterrupt(z80Cpu);
+		checkPorts(z80Cpu);
 		registersDump(z80Cpu);
 	}
-	
+
 	delete z80Cpu;
+	//close ports
+	delete stdIn;
+	
 	return 0;
 }
 
