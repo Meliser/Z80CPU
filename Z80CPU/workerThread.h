@@ -34,7 +34,6 @@ static unsigned __stdcall workerThread(void* CompletionPortID)
 				ovlPlus->buffer);
 			ovlPlus->setCurrentPos(BytesTransferred);
 
-
 			ovlPlus->setStatus(true);
 		}
 		else {
