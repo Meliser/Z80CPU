@@ -34,6 +34,7 @@ const size_t opcodes8Size = sizeof(opcodes8) / sizeof(opcodes8[0]);
 static unsigned short opcodes16[] =
 {
 	0b1111110101000110, //LD_R_IY_D
+	0b1110110101001101, //RETI
 	0b1101110101000110, //LD_R_IX_D
 	0b1100101101000000, //BIT_B_R
 };
@@ -197,8 +198,6 @@ void execute(Z80Cpu* z80Cpu) {
 		//OVERLAPPEDPLUS ovlp = z80Cpu->ioController.getPort(port)->getOvlp();
 		
 		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(port)->getOvlp().getBuffer()[z80Cpu->basicGpRegisters[A]];
-		z80Cpu->ioController.getPort(port)->start();
-		z80Cpu->ioController.getPort(port)->getOvlp().setStatus(false);
 		printf("IN_A_N\n");
 		return;
 	}
@@ -220,6 +219,13 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("LD_R_IY_D\n");
 		return;
 	}
+	case RETI:
+		z80Cpu->busyPort->restart();
+		z80Cpu->busyPort = nullptr;
+		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]));
+		z80Cpu->spRegisters16[SP] += 2;
+		printf("RETI\n");
+		return;
 	case LD_R_IX_D://test signed d
 	{
 		char d = fetch(z80Cpu);

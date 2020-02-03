@@ -68,13 +68,14 @@ unsigned char programm[] =
 };
 const size_t programmSize = sizeof(programm) / sizeof(programm[0]);
 
-// need RETI opcode
+
 unsigned char kbdIntHandler[] =
 {
 	0b11011011,		//IN_A_N
 	0b00000000,
 	
-	0b11001001,		//RET
+	0b11101101,		//RETI
+	0b01001101,		
 };
 const size_t kbdIntHandlerSize = sizeof(kbdIntHandler) / sizeof(kbdIntHandler[0]);
 

@@ -59,6 +59,7 @@ enum OPCODES8
 enum OPCODES16
 {
 LD_R_IY_D,
+RETI,
 LD_R_IX_D,
 BIT_B_R,
 
@@ -66,11 +67,9 @@ OPCODES16_SIZE
 };
 
 
-
 struct Z80Cpu
 {
 	unsigned char ram[0x10000];
-	IOController ioController;
 
 	unsigned char basicGpRegisters[GP_REGISTERS_SIZE];
 	unsigned char additionalGpRegisters[GP_REGISTERS_SIZE];
@@ -87,6 +86,9 @@ struct Z80Cpu
 	unsigned short* ADDITIONAL_DE;
 	unsigned short* ADDITIONAL_HL;
 	unsigned short* ADDITIONAL_AF;
+
+	IOController ioController;
+	IPort* busyPort;
 
 	bool running;
 };
@@ -149,6 +151,7 @@ static void checkPorts(Z80Cpu* z80Cpu) {
 	
 	for (auto port : ports) {
 		if (port->getOvlp().getStatus()) {
+			z80Cpu->busyPort = port;
 			port->getOvlp().setStatus(false);
 			z80Cpu->spRegisters16[SP] -= 2;
 			*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];

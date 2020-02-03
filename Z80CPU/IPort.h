@@ -15,7 +15,9 @@ struct OVERLAPPEDPLUS
 	//ready,busy,off,
 	bool m_status;
 	// buffer max 256
-	OVERLAPPEDPLUS() :buffer(new unsigned char[64]),m_currentPos(0), m_status(false) {
+	OVERLAPPEDPLUS() :	buffer(new unsigned char[64]),
+						m_currentPos(0),
+						m_status(false){
 		refresh();
 	}
 	~OVERLAPPEDPLUS() {
