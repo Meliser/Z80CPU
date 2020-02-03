@@ -76,12 +76,12 @@ void execute(Z80Cpu* z80Cpu) {
 	{
 	case LD_HL_N:
 	{
-		z80Cpu->ram[*z80Cpu->HL] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		z80Cpu->ram[*z80Cpu->HL] = fetch(z80Cpu);
 		printf("LD_HL_N\n");
 		return;
 	}
 	case LD_R_N:
-		z80Cpu->basicGpRegisters[opcode >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		z80Cpu->basicGpRegisters[opcode >> 3] = fetch(z80Cpu);
 		printf("LD_R_N\n");
 		return;
 	case LD_DD_NN:
@@ -190,16 +190,18 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("JP_NN\n");
 		return;
 	case IN_A_N:
-		//z80Cpu->basicGpRegisters[A] = z80Cpu->ports[z80Cpu->ram[z80Cpu->spRegisters16[PC]]];
-		//z80Cpu->basicGpRegisters[A] = z80Cpu->port.ovlp.buffer[0];
+	{
+		// accumulator value should be the index of buffer
 		
-
-		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(z80Cpu->ram[z80Cpu->spRegisters16[PC]])->getBuffer()[0];
-
-		//z80Cpu->port.ovlp.isReady = false;
-		z80Cpu->spRegisters16[PC]++;
+		unsigned char port = fetch(z80Cpu);
+		//OVERLAPPEDPLUS ovlp = z80Cpu->ioController.getPort(port)->getOvlp();
+		
+		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(port)->getOvlp().getBuffer()[z80Cpu->basicGpRegisters[A]];
+		z80Cpu->ioController.getPort(port)->start();
+		z80Cpu->ioController.getPort(port)->getOvlp().setStatus(false);
 		printf("IN_A_N\n");
 		return;
+	}
 	default:
 		opcode = (opcode << 8) | fetch(z80Cpu);
 		index = 0;
@@ -213,14 +215,14 @@ void execute(Z80Cpu* z80Cpu) {
 	{
 	case LD_R_IY_D://test signed d
 	{
-		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		char d = fetch(z80Cpu);
 		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IY] + d];
 		printf("LD_R_IY_D\n");
 		return;
 	}
 	case LD_R_IX_D://test signed d
 	{
-		char d = z80Cpu->ram[z80Cpu->spRegisters16[PC]++];
+		char d = fetch(z80Cpu);
 		z80Cpu->basicGpRegisters[(opcode & 0x0038) >> 3] = z80Cpu->ram[z80Cpu->spRegisters16[IX] + d];
 		printf("LD_R_IX_D\n");
 		return;
@@ -244,7 +246,7 @@ void execute(Z80Cpu* z80Cpu) {
 	}
 	
 }
-
+//replace with stl
 void swap(unsigned short* leftPtr, unsigned short* rightPtr)
 {
 	unsigned short temp = *leftPtr;

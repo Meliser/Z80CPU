@@ -4,7 +4,8 @@
 #include <vector>
 #include <thread>
 #include "IPort.h"
-#include "th.h"
+#include "workerThread.h"
+
 using namespace std;
 struct IOController {
 	HANDLE hComPort;
@@ -18,7 +19,7 @@ struct IOController {
 		//thread number should be changeble
 		for (int i = 0; i < 1; i++)
 		{
-			hThreads.push_back((HANDLE)_beginthreadex(NULL, 0, &WorkerThread, hComPort, 0, NULL));
+			hThreads.push_back((HANDLE)_beginthreadex(NULL, 0, &workerThread, hComPort, 0, NULL));
 		}
 	}
 	void attachPort(IPort* port) {
@@ -29,7 +30,7 @@ struct IOController {
 	IPort* getPort(size_t index) const {
 		return ports.at(index);
 	}
-	const vector<IPort*>& getPorts()const {
+	vector<IPort*>& getPorts() {
 		return ports;
 	}
 	void postExitKeys() {

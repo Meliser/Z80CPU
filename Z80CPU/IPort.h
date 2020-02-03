@@ -11,15 +11,32 @@ struct OVERLAPPEDPLUS
 
 	//additional data
 	unsigned char* buffer;
+	size_t m_currentPos;
 	//ready,busy,off,
-	bool isReady;
-
-	OVERLAPPEDPLUS() :buffer(new unsigned char[64]), isReady(false) {
+	bool m_status;
+	// buffer max 256
+	OVERLAPPEDPLUS() :buffer(new unsigned char[64]),m_currentPos(0), m_status(false) {
 		memset(&ovl, 0, sizeof(OVERLAPPED));
+		memset(buffer, 0, 64);
 	}
 	~OVERLAPPEDPLUS() {
 		delete[]buffer;
 		buffer = nullptr;
+	}
+	unsigned char* getBuffer()const {
+		return buffer;
+	}
+	size_t getCurrentPos()const {
+		return m_currentPos;
+	}
+	void setCurrentPos(size_t currentPos) {
+		m_currentPos = currentPos;
+	}
+	bool getStatus() const {
+		return m_status;
+	}
+	void setStatus(bool status) {
+		m_status = status;
 	}
 };
 
@@ -35,11 +52,8 @@ public:
 	const HANDLE getHandle() const {
 		return handle;
 	}
-	unsigned char* getBuffer()const {
-		return ovlp.buffer;
-	}
-	bool isReady() const {
-		return ovlp.isReady;
+	 OVERLAPPEDPLUS& getOvlp() {
+		return ovlp;
 	}
 	virtual void init() = 0;
 	virtual void start() = 0;
@@ -65,7 +79,7 @@ public:
 
 		ReadFile(handle,
 			ovlp.buffer,
-			64,
+			3,
 			NULL,
 			&ovlp.ovl);
 	}

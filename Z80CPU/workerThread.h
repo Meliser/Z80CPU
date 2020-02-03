@@ -1,8 +1,8 @@
 #pragma once
 #include <Windows.h>
 #include <stdio.h>
-
 #include <thread>
+
 static unsigned __stdcall workerThread(void* CompletionPortID)
 {
 
@@ -32,7 +32,10 @@ static unsigned __stdcall workerThread(void* CompletionPortID)
 			printf("Worker thread with id %u finished, buffer - > %s\n",
 				std::this_thread::get_id(),
 				ovlPlus->buffer);
-			ovlPlus->isReady = true;
+			ovlPlus->setCurrentPos(BytesTransferred);
+
+
+			ovlPlus->setStatus(true);
 		}
 		else {
 			printf("Worker thread with id %u detected empty file\n",

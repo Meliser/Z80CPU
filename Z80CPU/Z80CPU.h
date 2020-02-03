@@ -148,7 +148,8 @@ static void checkPorts(Z80Cpu* z80Cpu) {
 	auto ports = z80Cpu->ioController.getPorts();
 	
 	for (auto port : ports) {
-		if (port->isReady()) {
+		if (port->getOvlp().getStatus()) {
+			port->getOvlp().setStatus(false);
 			z80Cpu->spRegisters16[SP] -= 2;
 			*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
 			z80Cpu->spRegisters16[PC] = 0xeeee;
