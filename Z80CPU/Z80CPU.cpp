@@ -16,11 +16,14 @@ static unsigned char opcodes8[] =
 	//10
 	0x80, // ADD_A_R
 	//11
+	0xFB, //EI
+	0xF3, //DI
 	0xEB, //EX_DE_HL
+	0xDB, //IN_A_N
 	0xCD, //CALL_NN
 	0xC9, //RET
 	0xC3, //JP_NN
-	0xDB, //IN_A_N
+	
 	//EXTEND
 	0xFD,
 	0xED,
@@ -169,10 +172,34 @@ void execute(Z80Cpu* z80Cpu) {
 		printf("ADD_A_R\n");
 		return;
 	}
+	case EI:
+	{
+		z80Cpu->iff1 = true;
+		printf("EI\n");
+		return;
+	}
+	case DI:
+	{
+		z80Cpu->iff1 = false;
+		z80Cpu->iff2 = false;
+		printf("DI\n");
+		return;
+	}
 	case EX_DE_HL:
 	{
 		swap(z80Cpu->DE,z80Cpu->HL);
 		printf("EX_DE_HL\n");
+		return;
+	}
+	case IN_A_N:
+	{
+		// accumulator value should be the index of buffer
+
+		unsigned char port = fetch(z80Cpu);
+		//OVERLAPPEDPLUS ovlp = z80Cpu->ioController.getPort(port)->getOvlp();
+
+		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(port)->getOvlp().getBuffer()[z80Cpu->basicGpRegisters[A]];
+		printf("IN_A_N\n");
 		return;
 	}
 	case CALL_NN:
@@ -190,17 +217,6 @@ void execute(Z80Cpu* z80Cpu) {
 		z80Cpu->spRegisters16[PC] = *((unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[PC]));
 		printf("JP_NN\n");
 		return;
-	case IN_A_N:
-	{
-		// accumulator value should be the index of buffer
-		
-		unsigned char port = fetch(z80Cpu);
-		//OVERLAPPEDPLUS ovlp = z80Cpu->ioController.getPort(port)->getOvlp();
-		
-		z80Cpu->basicGpRegisters[A] = z80Cpu->ioController.getPort(port)->getOvlp().getBuffer()[z80Cpu->basicGpRegisters[A]];
-		printf("IN_A_N\n");
-		return;
-	}
 	default:
 		opcode = (opcode << 8) | fetch(z80Cpu);
 		index = 0;

@@ -10,6 +10,7 @@ using namespace std;
 struct IOController {
 	HANDLE hComPort;
 	vector<HANDLE> hThreads;
+	//use std::array instead
 	vector<IPort*> ports;
 	IOController() {
 		hComPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE,

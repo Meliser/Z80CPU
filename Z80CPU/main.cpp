@@ -32,8 +32,6 @@ unsigned char programm[] =
 
 	0b10000100,		//ADD_A_R
 
-	0b00000000,		//NOP
-
 	0b00100001,		//LD_DD_NN
 	0b11111111,
 	0b10101010,
@@ -43,6 +41,8 @@ unsigned char programm[] =
 
 	0b00011110,		//LD_R_N
 	0b00100010,
+
+	0b00000000,		//NOP
 
 	0b11101011,		//EX_DE_HL
 

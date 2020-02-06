@@ -46,11 +46,13 @@ enum OPCODES8
 	//10
 	ADD_A_R,
 	//11
+	EI,
+	DI,
 	EX_DE_HL,
+	IN_A_N,
 	CALL_NN,
 	RET,
 	JP_NN,
-	IN_A_N,
 
 	OPCODES8_SIZE
 };
@@ -89,6 +91,7 @@ struct Z80Cpu
 
 	IOController ioController;
 	IPort* busyPort;
+	bool iff1, iff2;
 
 	bool running;
 };
@@ -145,19 +148,31 @@ static void checkPorts(Z80Cpu* z80Cpu) {
 	
 	//check priority
 	//save registers
-	//handle interrupt;
+	//handle interrupt
 	//restore registers
-	auto ports = z80Cpu->ioController.getPorts();
-	
-	for (auto port : ports) {
-		if (port->getOvlp().getStatus()) {
-			z80Cpu->busyPort = port;
-			port->getOvlp().setStatus(false);
-			z80Cpu->spRegisters16[SP] -= 2;
-			*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
-			z80Cpu->spRegisters16[PC] = 0xeeee;
+
+	if (z80Cpu->iff1) {
+		if (z80Cpu->iff2) {
+			auto ports = z80Cpu->ioController.getPorts();
+
+			for (auto port : ports) {
+				if (port->getOvlp().getStatus()) {
+					z80Cpu->busyPort = port;
+					z80Cpu->iff1 = false;
+					z80Cpu->iff2 = false;
+					port->getOvlp().setStatus(false);
+					z80Cpu->spRegisters16[SP] -= 2;
+					*(unsigned short*)(z80Cpu->ram + z80Cpu->spRegisters16[SP]) = z80Cpu->spRegisters16[PC];
+					z80Cpu->spRegisters16[PC] = 0xeeee;
+				}
+			}
 		}
+		else {
+			z80Cpu->iff2 = true;
+		}
+		
 	}
+	
 }
 
 
